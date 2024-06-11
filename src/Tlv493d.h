@@ -28,11 +28,13 @@
  * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, 
  * WHETHER IN CONTRACT, STRICT LIABILITY,OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE 
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.   
+
+ * This is a fork of Infineon's library, introducing a critical fix to allow recovery from the ADC hang-up issue with
+ * the TLV493D-A1B6.
  */
 
 #ifndef TLV493D_H_INCLUDED
 #define TLV493D_H_INCLUDED
-
 
 #include <Arduino.h>
 #include <Wire.h>
@@ -115,6 +117,7 @@ public:
 	uint16_t getMeasurementDelay(void);
 	// read measurement results from sensor
 	Tlv493d_Error_t updateData(void);
+	void setCheckFrameCountError(bool state);
 	
 	// fieldvector in Cartesian coordinates
 	float getX(void);
@@ -137,6 +140,7 @@ private:
 	int16_t mZdata;
 	int16_t	mTempdata;
 	uint8_t mExpectedFrameCount;
+	bool mCheckFrameCountError;
 	
 
 	void resetSensor(uint8_t adr);

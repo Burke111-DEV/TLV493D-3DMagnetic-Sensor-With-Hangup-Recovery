@@ -1,10 +1,37 @@
 # TLV493D-A1B6-3DMagnetic-Sensor
 
+
 [![Build Status](https://travis-ci.org/Infineon/TLV493D-A1B6-3DMagnetic-Sensor.svg?branch=master)](https://travis-ci.org/Infineon/TLV493D-A1B6-3DMagnetic-Sensor)
 
 <img src="https://github.com/Infineon/Assets/blob/master/Pictures/3D%20Magnetic%20Sensor%202Go.jpg" width=250> <img src="https://github.com/Infineon/Assets/blob/master/Pictures/TLV493D-Sense-Shield2Go_Top_plain.jpg_2045671804.jpg?raw=true" width=300>
 
 Library of Infineon's [TLV493D-A1B6 3D magnetic sensor](https://www.infineon.com/cms/en/product/sensor/magnetic-sensors/magnetic-position-sensors/3d-magnetics/tlv493d-a1b6/) for Arduino. 
+
+## Foreword (Important)
+This repo is a fork of [Infineon's official TLV493d library](https://github.com/Infineon/TLV493D-A1B6-3DMagnetic-Sensor). It exists to introduce a critical fix when using the TLV493D-A1B6.
+
+Infineon recognise that this sensor suffers from an issue with the ADC hanging at random intermittent times, and suggest the fix to be resetting the sensor. However, **the original library does not provide a means to reliably detect a hang-up event.**
+
+Consequently, this project adds the ability to reliably detect a hang-up event using a new method called `setCheckFrameCountError()` which you may provide a value of `true` or `false` to enable/disable the new feature.
+
+If you are using the TLV493D-A1B6 sensor, you will benefit from enabling the feature. \
+When calling `updateData()` on your `Tlv493d` object, the result will allow you to detect and gracefully navigate the hang-up. E.g.,
+```cpp
+Tlv493d_Error updateDataResult = Tlv493dMagnetic3DSensor.updateData();
+if(updateDataResult == TLV493D_FRAME_ERROR)
+{
+    // Stop and restart the sensor.
+    Tlv493dMagnetic3DSensor.end();
+    Tlv493dMagnetic3DSensor.begin(Wire1);
+
+    // Reconfigure as required. E.g.,
+    Tlv493dMagnetic3DSensor.setAccessMode(Tlv493dMagnetic3DSensor.MASTERCONTROLLEDMODE);
+    Tlv493dMagnetic3DSensor.setCheckFrameCountError(true);
+    Tlv493dMagnetic3DSensor.disableTemp();
+}
+```
+
+It is recommended you also re-run any calibration steps you may have in your setup.
 
 ## Summary
 The 3D magnetic sensor TLV493D-A1B6 offers accurate three-dimensional sensing with extremely low power consumption in a small 6-pin package. With its magnetic field detection in x, y, and z-direction the sensor reliably measures three-dimensional, linear and rotation movements. Applications include joysticks, control elements (white goods, multifunction knops), or electric meters (anti tampering) and any other application that requires accurate angular measurements or low power consumptions.

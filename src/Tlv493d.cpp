@@ -28,6 +28,9 @@
  * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, 
  * WHETHER IN CONTRACT, STRICT LIABILITY,OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE 
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.   
+ 
+ * This is a fork of Infineon's library, introducing a critical fix to allow recovery from the ADC hang-up issue with
+ * the TLV493D-A1B6.
  */
 
 
@@ -85,6 +88,8 @@ void Tlv493d::begin(TwoWire &bus, Tlv493d_Address_t slaveAddress, bool reset)
 	// config sensor to lowpower mode
 	// also contains parity calculation and writeout to sensor
 	setAccessMode(TLV493D_DEFAULTMODE);
+	// Do not check frame count error by default.
+	setCheckFrameCountError(false);
 }
 
 
@@ -210,17 +215,22 @@ Tlv493d_Error_t Tlv493d::updateData(void)
 				{
 					ret = TLV493D_FRAME_ERROR;
 				}
-// Todo: removed due to a lot of frame errors
-//				// if received frame count does not match expected one (frame count from 0 to 3)
-//				else if( getRegBits(tlv493d::R_FRAMECOUNTER) != (mExpectedFrameCount % 4) )
-//				{
-//					ret = TLV493D_FRAME_ERROR;
-//				}
+				// Todo: removed due to a lot of frame errors
+				// if received frame count does not match expected one (frame count from 0 to 3)
+				else if(mCheckFrameCountError && getRegBits(tlv493d::R_FRAMECOUNTER) != (mExpectedFrameCount % 4) )
+				{
+					ret = TLV493D_FRAME_ERROR;
+				}
 			}
 		}
 	}
 	mExpectedFrameCount = getRegBits(tlv493d::R_FRAMECOUNTER) + 1;
 	return ret;
+}
+
+void Tlv493d::setCheckFrameCountError(bool state)
+{
+	mCheckFrameCountError = state;
 }
 
 
